@@ -1,0 +1,12 @@
+kubeconfig
+join-command
+registry-ca
+*.yml
+*.conf.d
+*credential*
+*auto*
+*.build
+*.push
+*.clean
+images/registry.json
+
