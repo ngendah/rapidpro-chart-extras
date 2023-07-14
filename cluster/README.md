@@ -64,5 +64,3 @@ With this setup, you can now easily
 1. Build and push the images
 
 2. Deploy the RapidPro helm charts
-
-In case of any issues, checkout the github actions file in this repo `.github/workflows`.
