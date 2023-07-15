@@ -98,6 +98,7 @@ configs:
 EOF
 
 sudo k3d cluster create $CLUSTER_NAME --servers=1 --agents=2 --network=$REGISTRY_NETWORK \
+  --port "8080:80@loadbalancer" \
   --volume="$REGISTRY_CONF_DIR/registry.yaml:/etc/rancher/k3s/registries.yaml" \
   --volume="$REGISTRY_CONF_DIR/ca.crt:/etc/ssl/certs/ca.crt"
 
