@@ -5,7 +5,7 @@
 ##
 
 DOCKER=docker
-SRCS=$(addsuffix .s, rapidpro mailroom courier)
+SRCS=$(addsuffix .s, rapidpro mailroom courier rp-indexer)
 BUILDS=$(SRCS:.s=.build)
 PUSH=$(SRCS:.s=.push)
 REGISTRY_HOST?=127.0.0.1
