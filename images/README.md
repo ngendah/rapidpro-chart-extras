@@ -15,5 +15,5 @@ Build and push images
 
     ```sh
         docker login -u <username> <registry host>
-        make -e REGISTRY_HOST="<registry host>" -j 3
+        make -e REGISTRY_HOST="<registry host>" -j 5
     ```
