@@ -8,14 +8,12 @@ services:
     - POSTGRES_USER=temba
     - POSTGRES_DB=temba
     - POSTGRES_PASSWORD=temba
-    - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-    - /var/run/postgresql/15/data:/var/lib/postgresql/data
     - ./postgresql.conf.d:/etc/postgresql/conf.d
   container_registry:
     image: registry:2
     volumes:
-    - /var/lib/registry:/var/lib/registry
+    - /var/run/registry2:/var/lib/registry
   registry:
     volumes:
     - ./registry.conf.d:/etc/nginx/conf.d
