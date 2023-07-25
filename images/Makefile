@@ -8,10 +8,10 @@ DOCKER=docker
 SRCS=$(addsuffix .s, rapidpro mailroom courier)
 BUILDS=$(SRCS:.s=.build)
 PUSH=$(SRCS:.s=.push)
-REGISTRY_HOST=$(shell jq -r '.host' registry.json)
+REGISTRY_HOST?=127.0.0.1
 BUILD_OPTIONS=
 #
-.PHONY: clean
+.PHONY: all build push clean
 
 all: $(BUILDS) $(PUSH)
 
@@ -20,15 +20,17 @@ build: $(BUILDS)
 push: $(PUSH)
 
 %.build:
+	$(eval build_args=$(shell echo $* | tr '-' '_' | tr '[a-z]' '[A-Z]')_VERSION=$(shell jq -r '.tag.version' $*/meta.json))
+	$(eval image_tag=$(shell jq -r '.tag.name' $*/meta.json):v$(shell jq -r '.tag.version' $*/meta.json))
 	$(DOCKER) buildx build $(BUILD_OPTIONS) \
-		--build-arg $(shell echo $* | tr '[a-z]' '[A-Z]')_VERSION=$(shell jq -r '.tag.version' $*/meta.json) \
-		-t $(shell jq -r '.tag.name' $*/meta.json):v$(shell jq -r '.tag.version' $*/meta.json) \
-		-t $(REGISTRY_HOST)/$(shell jq -r '.tag.name' $*/meta.json):v$(shell jq -r '.tag.version' $*/meta.json) \
+		--build-arg $(build_args) \
+		-t $(image_tag) \
 		-f $*/Dockerfile $*; \
-		touch $*/$@
+		$(file > $*/$@,$(image_tag))
 
 %.push: %.build
-	$(DOCKER) push $(REGISTRY_HOST)/$(shell jq -r '.tag.name' $*/meta.json):v$(shell jq -r '.tag.version' $*/meta.json); \
+	$(DOCKER) tag $(file < $*/$<) $(REGISTRY_HOST)/$(file < $*/$<)
+	$(DOCKER) push $(REGISTRY_HOST)/$(file < $*/$<); \
 		touch $*/$@
 
 clean:
