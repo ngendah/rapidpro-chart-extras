@@ -1,29 +1,25 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS base
 
-ARG COURIER_REPO
 ARG COURIER_VERSION
-ARG TZ
-ENV TZ=${TZ:-Africa/Nairobi}
-ENV COURIER_VERSION=${COURIER_VERSION:-7.4.0} 
+ENV COURIER_VERSION=${COURIER_VERSION:-7.4.0}
 
 RUN set -ex \
-    && apt-get -y update \
-    && apt-get install -y wget tzdata \
-    && cp /usr/share/zoneinfo/$TZ /etc/localtime \
-    && dpkg-reconfigure -f noninteractive tzdata \
     && addgroup --system courier \
-    && adduser -u 1001 --system --ingroup courier courier
+    && adduser --system --ingroup courier courier
 
-USER courier
-RUN mkdir -p /home/courier/app
-WORKDIR /home/courier
+FROM base AS build
 RUN set -ex \
-    && wget -qO courier.tar.gz "https://github.com/nyaruka/courier/releases/download/v${COURIER_VERSION}/courier_${COURIER_VERSION}_linux_amd64.tar.gz" \ 
-    && tar -C ./app -xf courier.tar.gz \
-    && rm -rf courier.tar.gz
+    && apt-get update \
+    && apt-get install -y wget \
+    && wget -qO courier.tar.gz "https://github.com/nyaruka/courier/releases/download/v${COURIER_VERSION}/courier_${COURIER_VERSION}_linux_amd64.tar.gz" \
+    && mkdir app \
+    && tar -C app -xf courier.tar.gz
 
-WORKDIR app
-COPY startup.sh .
+FROM base
+COPY --from=build /app/ /app/
+COPY startup.sh /app/
+WORKDIR /app/
+USER courier
 EXPOSE 8080
 ENTRYPOINT ["/bin/sh"]
 CMD ["-c", "./startup.sh"]

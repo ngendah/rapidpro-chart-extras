@@ -1,23 +1,24 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS base
 
 ARG RP_INDEXER_VERSION
-ENV RP_INDEXER_VERSION=${RP_INDEXER_VERSION}
+ENV RP_INDEXER_VERSION=${RP_INDEXER_VERSION:-7.4.0}
 
+RUN set -ex \
+    && addgroup --system indexer \
+    && adduser --system --ingroup indexer indexer
+
+FROM base AS build
 RUN set -ex \
     && apt-get -y update \
     && apt-get install -y wget \
-    && addgroup --system indexer \
-    && adduser -u 1001 --system --ingroup indexer indexer
+    && wget -qO indexer.tar.gz "https://github.com/nyaruka/rp-indexer/releases/download/v${RP_INDEXER_VERSION}/rp-indexer_${RP_INDEXER_VERSION}_linux_amd64.tar.gz" \
+    && mkdir app \
+    && tar -C app -xf indexer.tar.gz
 
+FROM base
+COPY --from=build /app/ /app/
+COPY startup.sh /app/
+WORKDIR /app/
 USER indexer
-RUN mkdir -p /home/indexer/app
-WORKDIR /home/indexer
-RUN set -ex; \
-    wget -qO indexer.tar.gz "https://github.com/nyaruka/rp-indexer/releases/download/v${RP_INDEXER_VERSION}/rp-indexer_${RP_INDEXER_VERSION}_linux_amd64.tar.gz" \
-    && tar -C ./app -xf indexer.tar.gz \
-    && rm -rf indexer indexer.tar.gz
-
-WORKDIR app
-COPY startup.sh .
 ENTRYPOINT ["/bin/sh"]
 CMD ["-c", "./startup.sh"]

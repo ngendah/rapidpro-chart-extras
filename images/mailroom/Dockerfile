@@ -1,28 +1,25 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS base
 
-ARG TZ
-ARG MAILROOM_REPO
 ARG MAILROOM_VERSION
-ENV TZ=${TZ:-Africa/Nairobi}
 ENV MAILROOM_VERSION=${MAILROOM_VERSION:-7.4.1}
 
 RUN set -ex \
-    && apt-get -y update \
-    && apt-get install -y wget tzdata \
-    && cp /usr/share/zoneinfo/$TZ /etc/localtime \
-    && dpkg-reconfigure -f noninteractive tzdata \
     && addgroup --system mailroom \
-    && adduser -u 1001 --system --ingroup mailroom mailroom
+    && adduser --system --ingroup mailroom mailroom
 
+FROM base AS build
+RUN set -ex \
+    && apt-get -y update \
+    && apt-get install -y wget \
+    && wget -qO mailroom.tar.gz "https://github.com/rapidpro/mailroom/releases/download/v${MAILROOM_VERSION}/mailroom_${MAILROOM_VERSION}_linux_amd64.tar.gz" \
+    && mkdir app \
+    && tar -C app -xf mailroom.tar.gz
+
+FROM base
+COPY --from=build /app/ /app/
+COPY startup.sh ./app/
+WORKDIR /app/
 USER mailroom
-RUN mkdir -p /home/mailroom/app
-WORKDIR /home/mailroom
-RUN set -ex; \
-    wget -qO mailroom.tar.gz "https://github.com/rapidpro/mailroom/releases/download/v${MAILROOM_VERSION}/mailroom_${MAILROOM_VERSION}_linux_amd64.tar.gz" \
-    && tar -C ./app -xf mailroom.tar.gz \
-    && rm -rf mailroom mailroom.tar.gz
-WORKDIR app
-COPY startup.sh .
 EXPOSE 8090
 ENTRYPOINT ["/bin/sh"]
 CMD ["-c", "./startup.sh"]

@@ -4,7 +4,7 @@ export POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:$POSTGRES_PORT/${POSTGRES_DB}"
 
 _create_pass_file(){
-  PASSFILE=$HOME/.pgpass
+  PASSFILE=/tmp/.pgpass
   echo "*:*:*:$POSTGRES_USER:$POSTGRES_PASSWORD" > $PASSFILE
   chmod 0600 $PASSFILE
 }
