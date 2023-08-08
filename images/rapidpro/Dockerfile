@@ -23,6 +23,7 @@ ENV POETRY_CACHE_DIR=/rapidpro/.cache
 RUN set -ex \
     && python3.9 -m venv . \
     && mkdir -p ./app ./.cache \
+    && npm install -g coffeescript less \
     && pip3 install --no-cache -U pip setuptools \
     && pip3 install --no-cache poetry
 
@@ -63,7 +64,6 @@ RUN set -ex \
     && export CRYPTOGRAPHY_DONT_BUILD_RUST=1
 
 RUN set -ex \
-    && npm install -g coffeescript less \
     && npm install
 
 RUN set -ex \
@@ -80,7 +80,7 @@ COPY scripts/*.sh /rapidpro/app/
 RUN chmod g=rwx,o=rwx ./app # TODO fix
 USER rapidpro
 WORKDIR app
-EXPOSE 8000 8080
+EXPOSE 8000
 ENTRYPOINT ["/bin/sh"]
 CMD ["-c", "./server.sh"]
 
