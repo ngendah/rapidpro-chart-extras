@@ -8,5 +8,8 @@ registry-ca
 *.build
 *.push
 *.clean
+*.parch
+*.bake
+*.grill
 images/registry.json
 
